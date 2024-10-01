@@ -2,13 +2,16 @@ from typing import LiteralString, List
 import chainlit as cl
 from chainlit.input_widget import Select, Switch, Slider
 import ollama as ol
+from ollama import Options
 from chainlit.logger import logger
 
 ollama_client = ol.AsyncClient(host="http://host.docker.internal:11434")
 
-async def get_models()-> List[LiteralString]:
+
+async def get_models() -> List[LiteralString]:
     model_dict = await ollama_client.list()
-    return [ model["name"] for model in model_dict["models"]]
+    return [model["name"] for model in model_dict["models"]]
+
 
 @cl.on_chat_start
 async def start_chat():
@@ -23,20 +26,35 @@ async def start_chat():
                 initial_index=0,
             ),
             Switch(id="stream", label="Stream Tokens", initial=True),
+            Slider(
+                id="temperature",
+                label="Ollama - Temperature",
+                initial=0.6,
+                min=0,
+                max=1,
+                step=0.1,
+            ),
         ]
     ).send()
     await settings_update(settings)
     cl.user_session.set(
         "message_history",
-        [{"role": "system", "content": "You are a helpful assistant."}],
+        [
+            {
+                "role": "system",
+                "content": "You are a helpful assistant. Your answsers are always formatted properly. Preferrably in markdown.",
+            }
+        ],
     )
+
 
 @cl.on_settings_update
 async def settings_update(settings):
     logger.info("Provided settings %s", settings)
-    cl.user_session.set("model", settings['model'])
-    cl.user_session.set("stream", settings['stream'])
-    
+    cl.user_session.set("model", settings["model"])
+    cl.user_session.set("stream", settings["stream"])
+    cl.user_session.set("temperature", settings["temperature"])
+
 
 @cl.on_message
 async def message(message: cl.Message):
@@ -46,20 +64,22 @@ async def message(message: cl.Message):
     msg = cl.Message(content="")
     await msg.send()
 
-    response = await ollama_client.chat(model=cl.user_session.get('model'), 
-        messages=message_history, stream=cl.user_session.get('stream'), 
+    response = await ollama_client.chat(
+        model=cl.user_session.get("model"),
+        options=Options(temperature=cl.user_session.get("temperature")),
+        messages=message_history,
+        stream=cl.user_session.get("stream"),
     )
 
-    if cl.user_session.get('stream'):
+    if cl.user_session.get("stream"):
         async for part in response:
-            if 'message' in part and 'content' in part['message']:
-                await msg.stream_token(part['message']['content'])
+            if "message" in part and "content" in part["message"]:
+                await msg.stream_token(part["message"]["content"])
     else:
         print(response)
-        if 'message' in response and 'content' in response['message']:
+        if "message" in response and "content" in response["message"]:
             msg.content = response["message"]["content"]
             await msg.send()
-
 
     message_history.append({"role": "assistant", "content": msg.content})
     await msg.update()
