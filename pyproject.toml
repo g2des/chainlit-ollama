@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "chainlit-ollama"
+version = "0.1.0"
+description = "Using ollama models with chainlit interface"
+authors = ["Gaurav Deshpande <gnsd1994@live.com>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+chainlit = "^1.2.0"
+ollama = "^0.3.3"
+
+
+[tool.poetry.group.dev.dependencies]
+black = "^24.8.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
