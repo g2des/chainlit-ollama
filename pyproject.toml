@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "chainlit-ollama"
+name = "chainlit_ollama"
 version = "0.1.0"
 description = "Using ollama models with chainlit interface"
 authors = ["Gaurav Deshpande <gnsd1994@live.com>"]

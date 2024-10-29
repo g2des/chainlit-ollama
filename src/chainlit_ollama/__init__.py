@@ -1,0 +1,2 @@
+"""Chainlit Ollama application"""
+

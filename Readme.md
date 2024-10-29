@@ -16,7 +16,14 @@ ollama serve
 ```bash
 poetry install
 ```
-- Run Chainlit App
+
+## Simple Chainlit Ollama App
+
+This is a simple app, that connects chainlit with Ollama. It has following features:
+- It lists all the models that are already available on the local system
+- It allows you to select between the listed models
+- It allows you to set temperature
+- Run Simple Chainlit App
 ```bash
 poetry run chainlit run src/chainlit-ollama/simpleChainlit.py
 ```

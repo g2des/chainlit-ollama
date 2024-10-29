@@ -1,51 +1,25 @@
-from typing import LiteralString, List
+"""Chainlit app interface."""
+from typing import List, LiteralString
+
 import chainlit as cl
-from chainlit.input_widget import Select, Switch, Slider
-import ollama as ol
+import chainlit.logger as logger
 from ollama import Options
-from chainlit.logger import logger
 
-ollama_client = ol.AsyncClient(host="http://host.docker.internal:11434")
 
+from chainlit_ollama import utils as clutils
+from chainlit_ollama import ollama as ollmutils 
 
 async def get_models() -> List[LiteralString]:
-    model_dict = await ollama_client.list()
-    return [model["name"] for model in model_dict["models"]]
+    return  ollmutils.get_models()
 
+
+@cl.set_chat_profiles
+async def chat_profile(current_user: cl.User)-> List:
+    return clutils.chat_profiles
 
 @cl.on_chat_start
 async def start_chat():
-    models = await get_models()
-    default_model = models[0]
-    settings = await cl.ChatSettings(
-        [
-            Select(
-                id="model",
-                label="Ollama - Models",
-                values=models,
-                initial_index=0,
-            ),
-            Switch(id="stream", label="Stream Tokens", initial=True),
-            Slider(
-                id="temperature",
-                label="Ollama - Temperature",
-                initial=0.6,
-                min=0,
-                max=1,
-                step=0.1,
-            ),
-        ]
-    ).send()
-    await settings_update(settings)
-    cl.user_session.set(
-        "message_history",
-        [
-            {
-                "role": "system",
-                "content": "You are a helpful assistant. Your answsers are always formatted properly. Preferrably in markdown.",
-            }
-        ],
-    )
+    await clutils.start_chat()
 
 
 @cl.on_settings_update
@@ -60,11 +34,12 @@ async def settings_update(settings):
 async def message(message: cl.Message):
     message_history = cl.user_session.get("message_history")
     message_history.append({"role": "user", "content": message.content})
+    print(message_history)
 
     msg = cl.Message(content="")
     await msg.send()
 
-    response = await ollama_client.chat(
+    response = await ollmutils.ollama_client.chat(
         model=cl.user_session.get("model"),
         options=Options(temperature=cl.user_session.get("temperature")),
         messages=message_history,
