@@ -25,5 +25,5 @@ This is a simple app, that connects chainlit with Ollama. It has following featu
 - It allows you to set temperature
 - Run Simple Chainlit App
 ```bash
-poetry run chainlit run src/chainlit-ollama/simpleChainlit.py
+poetry run chainlit run chainlit.py
 ```

@@ -6,6 +6,7 @@ from chainlit.input_widget import Select, Switch, Slider
 from chainlit.logger import logger
 
 from chainlit_ollama import ollama as ollmutils
+from chainlit_ollama import settings as clsettings
 chat_profiles = [
         cl.ChatProfile(
             name="Phi3.5",
@@ -65,7 +66,8 @@ async def start_chat():
             ),
         ]
     ).send()
-    await settings_update(settings)
+    print(settings)
+    await clsettings.settings(settings)
     cl.user_session.set(
         "message_history",
         [
@@ -75,9 +77,3 @@ async def start_chat():
             }
         ],
     )
-
-async def settings_update(settings):
-    logger.info("Provided settings %s", settings)
-    cl.user_session.set("model", settings["model"])
-    cl.user_session.set("stream", settings["stream"])
-    cl.user_session.set("temperature", settings["temperature"])
